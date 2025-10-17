@@ -1,0 +1,3 @@
+Summarize the document in 3 bullet points
+Extract all policy numbers and their coverage details.
+List all important dates (issue date, renewal date, expiry date).

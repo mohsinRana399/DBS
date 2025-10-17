@@ -1,0 +1,10 @@
+prompts:
+  - title: Paragraph Summary
+    description: Summarize the last paragraph concisely.
+    prompt: Summarize the last paragraph
+  - title: Policy Info
+    description: Extract all policy numbers and their coverage details.
+    prompt: Extract all policy numbers and their coverage details.
+  - title: Important Dates
+    description: List all important dates (issue date, renewal date, expiry date).
+    prompt: List all important dates (issue date, renewal date, expiry date).

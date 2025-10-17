@@ -1,0 +1,76 @@
+{
+  "prompts": [
+    {
+      "title": "Policy Number",
+      "prompt": "What is the policy number mentioned in this document?"
+    },
+    {
+      "title": "Insurer Name",
+      "prompt": "Who is the insurance company or insurer for this policy?"
+    },
+    {
+      "title": "Policyholder",
+      "prompt": "Who is the policyholder or insured party named in the document?"
+    },
+    {
+      "title": "Effective Date",
+      "prompt": "What is the effective date of the policy?"
+    },
+    {
+      "title": "Expiration Date",
+      "prompt": "What is the expiration or end date of the policy?"
+    },
+    {
+      "title": "Coverage Type",
+      "prompt": "What is the main coverage type or line of insurance for this policy?"
+    },
+    {
+      "title": "Policy Form",
+      "prompt": "What policy form number or form name is referenced in this document?"
+    },
+    {
+      "title": "Currency",
+      "prompt": "What currency is used in this insurance policy?"
+    },
+    {
+      "title": "Total Premium",
+      "prompt": "What is the total premium amount listed?"
+    },
+    {
+      "title": "Limit Amount",
+      "prompt": "What is the coverage limit mentioned in the policy?"
+    },
+    {
+      "title": "Deductible / Retention",
+      "prompt": "What is the deductible or retention amount specified in the document?"
+    },
+    {
+      "title": "Underwriter",
+      "prompt": "Who is the underwriter or underwriting company for this policy?"
+    },
+    {
+      "title": "Broker / Agent",
+      "prompt": "Who is the broker or agent listed on the insurance document?"
+    },
+    {
+      "title": "Quote Date",
+      "prompt": "What is the quote date or issue date for this insurance policy?"
+    },
+    {
+      "title": "Policy Jurisdiction",
+      "prompt": "What jurisdiction or governing law applies to this policy?"
+    },
+    {
+      "title": "Claim Contact",
+      "prompt": "Who is the claim contact or department to reach for claims?"
+    },
+    {
+      "title": "Beneficiary",
+      "prompt": "Who is listed as the beneficiary in the policy?"
+    },
+    {
+      "title": "Form Edition / Date",
+      "prompt": "What is the form edition or revision date mentioned?"
+    }
+  ]
+}
