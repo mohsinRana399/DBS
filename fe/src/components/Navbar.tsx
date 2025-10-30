@@ -11,6 +11,7 @@ import { useAppColors } from "../hooks/useAppColors";
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Processed Files", path: "/processed" },
+  { label: "Prompts", path: "/prompts" },
 ];
 export default function Navbar() {
   const location = useLocation();

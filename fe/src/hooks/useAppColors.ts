@@ -14,6 +14,7 @@ export const useAppColors = () => {
     textSecondary: darkMode ? "#c9d1d9" : "#55647a",
     success: theme.palette.success.main,
     error: theme.palette.error.main,
+    info: theme.palette.info.main,
     progress: theme.palette.info.main,
     buttonHover: theme.palette.primary.main,
     shadow: darkMode

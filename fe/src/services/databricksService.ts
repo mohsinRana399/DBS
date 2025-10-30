@@ -23,13 +23,14 @@ export const databricksSetup = async () => {
 
 export const uploadAndAnalyzePdf = async (
   file: any,
+  prompts: { title: string; prompt: string }[],
   createNotebook = false
 ) => {
   try {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("create_notebook", String(createNotebook));
-
+    formData.append("prompts_json", JSON.stringify(prompts));
     const response = await api.post("/api/pdf/upload-and-analyze", formData, {
       headers: {
         "Content-Type": "multipart/form-data",

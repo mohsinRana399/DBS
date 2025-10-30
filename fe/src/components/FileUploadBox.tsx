@@ -9,7 +9,11 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import ArticleIcon from "@mui/icons-material/Article";
 import { useAppColors } from "../hooks/useAppColors";
+import { useSelector } from "react-redux";
+import type { RootState } from "../redux/store";
+import { useNavigate } from "react-router-dom";
 
 interface FileUploadBoxProps {
   loading: boolean;
@@ -29,17 +33,36 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
   processing,
 }) => {
   const { colors } = useAppColors();
+  const { prompts } = useSelector((state: RootState) => state.prompts);
+  const navigate = useNavigate();
 
   const isDisabled = loading || !databricksConnected || processing;
+  const hasPrompts = prompts && prompts.length > 0;
 
   const content = useMemo(() => {
     if (loading) return "Waiting for connection...";
     if (!databricksConnected) return "Not Connected";
     if (processing)
       return `Processing file ${currentFileIndex! + 1} of ${totalFiles ?? 0}`;
-    return "Ready to Upload";
-  }, [loading, databricksConnected, processing, currentFileIndex, totalFiles]);
+    if (!hasPrompts) return `No Prompts Found`;
 
+    return "Ready to Upload";
+  }, [
+    loading,
+    databricksConnected,
+    processing,
+    currentFileIndex,
+    totalFiles,
+    hasPrompts,
+  ]);
+  const renderIcon = useMemo(() => {
+    if (loading)
+      return <CircularProgress size={22} sx={{ color: colors.progress }} />;
+    if (!databricksConnected)
+      return <HourglassBottomIcon sx={{ color: colors.error }} />;
+    if (!hasPrompts) return <ArticleIcon sx={{ color: colors.info }} />;
+    return <CheckCircleIcon sx={{ color: colors.success }} />;
+  }, [loading, databricksConnected, hasPrompts, colors]);
   return (
     <Card
       sx={{
@@ -51,6 +74,8 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
         backdropFilter: "blur(6px)",
         border: `1px solid ${colors.border}`,
         transition: "background 0.3s ease, box-shadow 0.3s ease",
+        display: "flex",
+        flex: 1,
       }}
     >
       <CardContent
@@ -70,13 +95,7 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
             mb: 1,
           }}
         >
-          {loading ? (
-            <CircularProgress size={22} sx={{ color: colors.progress }} />
-          ) : databricksConnected ? (
-            <CheckCircleIcon sx={{ color: colors.success }} />
-          ) : (
-            <HourglassBottomIcon sx={{ color: colors.error }} />
-          )}
+          {renderIcon}
           <Typography
             variant="body1"
             sx={{ opacity: 0.9, color: colors.text, fontWeight: 500 }}
@@ -84,6 +103,14 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
             {content}
           </Typography>
         </Box>
+        {!hasPrompts && (
+          <Typography
+            variant="body2"
+            sx={{ color: colors.textSecondary, mb: 1 }}
+          >
+            Add or import prompts to get started.
+          </Typography>
+        )}
 
         <Box
           sx={{
@@ -104,29 +131,48 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
             },
           }}
         >
-          <Button
-            variant="contained"
-            component="label"
-            disabled={isDisabled}
-            sx={{
-              mt: 1,
-              textTransform: "none",
-              fontWeight: 600,
-              borderRadius: 2,
-              "&:hover": {
-                backgroundColor: colors.buttonHover,
-              },
-            }}
-          >
-            Select PDF Files
-            <input
-              type="file"
-              accept=".pdf"
-              multiple
-              hidden
-              onChange={handleFileChange}
-            />
-          </Button>
+          {!hasPrompts ? (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={() => navigate("/prompts")}
+              sx={{
+                mt: 1,
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                "&:hover": {
+                  backgroundColor: colors.buttonHover,
+                },
+              }}
+            >
+              Go to Prompts
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              component="label"
+              disabled={isDisabled || !hasPrompts}
+              sx={{
+                mt: 1,
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+                "&:hover": {
+                  backgroundColor: colors.buttonHover,
+                },
+              }}
+            >
+              Select PDF Files
+              <input
+                type="file"
+                accept=".pdf"
+                multiple
+                hidden
+                onChange={handleFileChange}
+              />
+            </Button>
+          )}
         </Box>
       </CardContent>
     </Card>

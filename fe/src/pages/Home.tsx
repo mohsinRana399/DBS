@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../App.css";
 import { uploadAndAnalyzePdf } from "../services/databricksService";
-import { Box } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import FileUploadBox from "../components/FileUploadBox";
 import FileAnalysisTabs from "../components/fileAnalysis/FileAnalysisTabs";
@@ -24,6 +24,7 @@ const Home: React.FC<HomeProps> = () => {
   const { fileQueue, loading, databricksConnected } = useSelector(
     (state: RootState) => state.file
   );
+  const { prompts } = useSelector((state: RootState) => state.prompts);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -48,7 +49,7 @@ const Home: React.FC<HomeProps> = () => {
       // updateFileStatus(i, "processing");
       dispatch(updateFileStatus({ index: i, status: "processing" }));
       try {
-        const result = await uploadAndAnalyzePdf(queue[i].file, true);
+        const result = await uploadAndAnalyzePdf(queue[i].file, prompts);
         console.log({ result });
 
         if (result?.success) {
@@ -95,15 +96,17 @@ const Home: React.FC<HomeProps> = () => {
         flex: 1,
       }}
     >
-      {/* Upload Box */}
-      <FileUploadBox
-        loading={loading}
-        processing={processingFile}
-        databricksConnected={databricksConnected}
-        handleFileChange={handleFileChange}
-        totalFiles={fileQueue?.length}
-        currentFileIndex={currentFileIndex}
-      />
+      <Stack direction="row" spacing={1}>
+        {/* Upload Box */}
+        <FileUploadBox
+          loading={loading}
+          processing={processingFile}
+          databricksConnected={databricksConnected}
+          handleFileChange={handleFileChange}
+          totalFiles={fileQueue?.length}
+          currentFileIndex={currentFileIndex}
+        />
+      </Stack>
 
       {/* File Results */}
       {fileQueue?.length > 0 && (

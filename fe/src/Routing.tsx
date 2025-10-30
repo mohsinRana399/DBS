@@ -9,6 +9,7 @@ import { databricksSetup } from "./services/databricksService";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "./redux/store";
 import { setDatabricksConnected, setLoading } from "./redux/slices/fileSlice";
+import Prompts from "./pages/Prompts";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "processed", element: <ProcessedFiles /> },
+      { path: "prompts", element: <Prompts /> },
     ],
   },
 ]);

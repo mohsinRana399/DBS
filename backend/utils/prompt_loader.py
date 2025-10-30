@@ -3,7 +3,6 @@ import json
 import yaml
 from typing import List, Dict, Union
 
-
 def load_prompts(file_path: str) -> List[Dict[str, Union[str, None]]]:
     """
     Load prompts from a .txt, .json, or .yaml file.
@@ -48,3 +47,6 @@ def load_prompts(file_path: str) -> List[Dict[str, Union[str, None]]]:
         return [format_prompt_item(item) for item in data["prompts"]]
     else:
         raise ValueError("Invalid prompt file structure")
+
+
+   

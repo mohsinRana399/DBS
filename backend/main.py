@@ -8,8 +8,8 @@ import logging
 from typing import Optional
 from datetime import datetime
 import time
-
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+import json
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends,Form
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from dotenv import load_dotenv
@@ -171,7 +171,8 @@ async def upload_pdf_direct_method(file_content: bytes, filename: str, db: Datab
 
 @app.post("/api/pdf/upload-and-analyze")
 async def upload_and_analyze_pdf(
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),  
+    prompts_json: str = Form(...),
     db: DatabricksAPIIntegration = Depends(get_databricks_connection)
 ):
     """Upload a PDF and immediately analyze it with hardcoded prompts."""
@@ -196,21 +197,6 @@ async def upload_and_analyze_pdf(
         # Construct path used for analysis
         pdf_path = f"/Workspace/Shared/pdf_uploads/{file.filename}"
 
-      
-        # Load prompts from Text file
-        # prompts_file = os.getenv("PROMPTS_FILE_PATH", "prompts/prompts.txt")
-
-        # Load prompts from JSON file
-        prompts_file = os.getenv("PROMPTS_FILE_PATH", "prompts/prompts.json")
-
-        # Load prompts from YAML file
-        # prompts_file = os.getenv("PROMPTS_FILE_PATH", "prompts/prompts.yaml")
-        try:
-            prompts = load_prompts(prompts_file)
-            logger.info(f"Loaded {len(prompts)} prompts from {prompts_file}")
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-       
 
         # Import AI client
         from backend.databricks_ai import DatabricksAI
@@ -241,6 +227,14 @@ async def upload_and_analyze_pdf(
         text_length = len(extracted_text)
 
         logger.info(f"PDF processed once: {download_time}s download, {extraction_time}s extraction, {pages_analyzed} pages, {text_length} characters")
+
+        try:
+            prompts = json.loads(prompts_json)
+            if not isinstance(prompts, list):
+                raise ValueError("Prompts must be a list of {title, prompt} objects")
+            logger.info(f"Received {len(prompts)} prompts from frontend")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid prompts: {str(e)}")
 
         # Step 3: Process each prompt with the cached text (with retry logic)
         responses = []
@@ -278,31 +272,7 @@ async def upload_and_analyze_pdf(
                 "error": result.get("error"),
                 "timing": result.get("timing", {})
             })
-        # for prompt in prompts:
-        #     try:
-        #         result = ai_client.analyze_pdf(pdf_path,  prompt["prompt"])
-        #         responses.append({
-        #             "prompt": prompt["prompt"],
-        #             "title": prompt["title"],
-        #             "answer": result.get("answer", ""),
-        #             "explanation": result.get("explanation", ""),
-        #             "success": result.get("success", False),
-        #             "error": result.get("error"),
-        #             "timing": result.get("timing", {})
-        #         })
-        #     except Exception as e:
-        #         responses.append({
-        #             "prompt": prompt["prompt"],
-        #             "title": prompt["title"],
-        #             "answer": "",
-        #             "success": False,
-        #             "error": str(e),
-        #             "timing": {}
-        #         })
-
-        # Merge results (simple join)
-        # merged_summary = " ".join([r["answer"] for r in responses if r["success"]])
-        # Merge results safely (handles both list or string answers)
+        
         for r in responses:
             if isinstance(r.get("answer"), (list, dict)):
                 logger.warning(f"Answer for '{r.get('prompt')}' returned a {type(r.get('answer')).__name__}")
