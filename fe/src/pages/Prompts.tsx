@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import {
   addPrompt,
@@ -35,11 +36,51 @@ const Prompts: React.FC<PromptsProps> = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editPrompt, setEditPrompt] = useState("");
   const [showAddBox, setShowAddBox] = useState<boolean>(false);
+  const [useJson, setUseJson] = useState(false);
+  const [jsonInput, setJsonInput] = useState("");
   const addNew = () => {
     if (!newTitle.trim() || !newPrompt.trim()) return;
     dispatch(addPrompt({ title: newTitle.trim(), prompt: newPrompt.trim() }));
     setNewTitle("");
     setNewPrompt("");
+  };
+
+  const addNewWithJson = () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+
+      if (Array.isArray(parsed.prompts)) {
+        // Bulk list format
+        const validPrompts = parsed.prompts.filter(
+          (p: any) => p.title && p.prompt
+        );
+        if (validPrompts.length === 0)
+          return alert("No valid prompts found in JSON.");
+
+        validPrompts.forEach((p: any) =>
+          dispatch(
+            addPrompt({ title: p.title.trim(), prompt: p.prompt.trim() })
+          )
+        );
+        alert(`Added ${validPrompts.length} prompts successfully!`);
+        setJsonInput("");
+      } else if (parsed.title && parsed.prompt) {
+        dispatch(
+          addPrompt({
+            title: parsed.title.trim(),
+            prompt: parsed.prompt.trim(),
+          })
+        );
+        alert("Single prompt parsed successfully!");
+      } else {
+        alert("JSON must contain either a single prompt or a 'prompts' array.");
+      }
+    } catch (err) {
+      console.log({ err });
+
+      alert("Invalid JSON format.");
+    }
+    // setJsonInput("");
   };
 
   const startEdit = (idx: number) => {
@@ -84,7 +125,6 @@ const Prompts: React.FC<PromptsProps> = () => {
 
     try {
       const text = await file.text();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let data: any;
 
       if (file.name.endsWith(".yaml") || file.name.endsWith(".yml")) {
@@ -101,7 +141,7 @@ const Prompts: React.FC<PromptsProps> = () => {
       }
 
       let addedCount = 0;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (imported?.length > 0) dispatch(clearPrompts());
       imported.forEach((p: any) => {
         if (p.title && p.prompt) {
           dispatch(addPrompt({ title: p.title, prompt: p.prompt }));
@@ -169,50 +209,91 @@ const Prompts: React.FC<PromptsProps> = () => {
                 >
                   Add New Prompt
                 </Typography>
+                {!useJson && (
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={addNew}
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => {
+                        setNewTitle("");
+                        setNewPrompt("");
+                      }}
+                    >
+                      Reset
+                    </Button>
+                  </Stack>
+                )}
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                <Button
+                  variant={useJson ? "contained" : "outlined"}
+                  size="small"
+                  onClick={() => setUseJson(true)}
+                >
+                  JSON Mode
+                </Button>
+                <Button
+                  variant={!useJson ? "contained" : "outlined"}
+                  size="small"
+                  onClick={() => setUseJson(false)}
+                >
+                  Manual Mode
+                </Button>
+              </Stack>
 
-                <Stack direction="row" spacing={1}>
-                  <Button
-                    variant="contained"
-                    color="primary"
+              {/* Input area */}
+              {!useJson ? (
+                <Stack spacing={1}>
+                  <TextField
+                    placeholder="Title"
                     size="small"
-                    onClick={addNew}
-                  >
-                    Add
-                  </Button>
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    fullWidth
+                    variant="outlined"
+                  />
+                  <TextField
+                    placeholder="Prompt"
+                    size="small"
+                    value={newPrompt}
+                    onChange={(e) => setNewPrompt(e.target.value)}
+                    multiline
+                    minRows={2}
+                    fullWidth
+                    variant="outlined"
+                  />
+                </Stack>
+              ) : (
+                <Stack spacing={1}>
+                  <TextField
+                    placeholder='Paste raw JSON like: {"title": "Policy Number", "prompt": "What is the policy number?"}'
+                    size="small"
+                    value={jsonInput}
+                    onChange={(e) => setJsonInput(e.target.value)}
+                    multiline
+                    minRows={4}
+                    fullWidth
+                    variant="outlined"
+                  />
                   <Button
                     variant="outlined"
-                    color="error"
+                    color="secondary"
                     size="small"
-                    onClick={() => {
-                      setNewTitle("");
-                      setNewPrompt("");
-                    }}
+                    onClick={addNewWithJson}
                   >
-                    Reset
+                    Parse JSON
                   </Button>
                 </Stack>
-              </Stack>
-
-              <Stack spacing={1}>
-                <TextField
-                  placeholder="Title"
-                  size="small"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                />
-                <TextField
-                  placeholder="Prompt"
-                  size="small"
-                  value={newPrompt}
-                  onChange={(e) => setNewPrompt(e.target.value)}
-                  multiline
-                  minRows={2}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Stack>
+              )}
             </CardContent>
           </Card>
         </Grow>

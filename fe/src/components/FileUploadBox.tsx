@@ -9,11 +9,7 @@ import {
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
-import ArticleIcon from "@mui/icons-material/Article";
 import { useAppColors } from "../hooks/useAppColors";
-import { useSelector } from "react-redux";
-import type { RootState } from "../redux/store";
-import { useNavigate } from "react-router-dom";
 
 interface FileUploadBoxProps {
   loading: boolean;
@@ -33,36 +29,25 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
   processing,
 }) => {
   const { colors } = useAppColors();
-  const { prompts } = useSelector((state: RootState) => state.prompts);
-  const navigate = useNavigate();
 
   const isDisabled = loading || !databricksConnected || processing;
-  const hasPrompts = prompts && prompts.length > 0;
 
   const content = useMemo(() => {
     if (loading) return "Waiting for connection...";
     if (!databricksConnected) return "Not Connected";
     if (processing)
       return `Processing file ${currentFileIndex! + 1} of ${totalFiles ?? 0}`;
-    if (!hasPrompts) return `No Prompts Found`;
 
     return "Ready to Upload";
-  }, [
-    loading,
-    databricksConnected,
-    processing,
-    currentFileIndex,
-    totalFiles,
-    hasPrompts,
-  ]);
+  }, [loading, databricksConnected, processing, currentFileIndex, totalFiles]);
   const renderIcon = useMemo(() => {
     if (loading)
       return <CircularProgress size={22} sx={{ color: colors.progress }} />;
     if (!databricksConnected)
       return <HourglassBottomIcon sx={{ color: colors.error }} />;
-    if (!hasPrompts) return <ArticleIcon sx={{ color: colors.info }} />;
+
     return <CheckCircleIcon sx={{ color: colors.success }} />;
-  }, [loading, databricksConnected, hasPrompts, colors]);
+  }, [loading, databricksConnected, colors]);
   return (
     <Card
       sx={{
@@ -103,14 +88,6 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
             {content}
           </Typography>
         </Box>
-        {!hasPrompts && (
-          <Typography
-            variant="body2"
-            sx={{ color: colors.textSecondary, mb: 1 }}
-          >
-            Add or import prompts to get started.
-          </Typography>
-        )}
 
         <Box
           sx={{
@@ -131,48 +108,29 @@ const FileUploadBox: React.FC<FileUploadBoxProps> = ({
             },
           }}
         >
-          {!hasPrompts ? (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={() => navigate("/prompts")}
-              sx={{
-                mt: 1,
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: colors.buttonHover,
-                },
-              }}
-            >
-              Go to Prompts
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              component="label"
-              disabled={isDisabled || !hasPrompts}
-              sx={{
-                mt: 1,
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: colors.buttonHover,
-                },
-              }}
-            >
-              Select PDF Files
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                hidden
-                onChange={handleFileChange}
-              />
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            component="label"
+            disabled={isDisabled}
+            sx={{
+              mt: 1,
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: 2,
+              "&:hover": {
+                backgroundColor: colors.buttonHover,
+              },
+            }}
+          >
+            Select PDF Files
+            <input
+              type="file"
+              accept=".pdf"
+              multiple
+              hidden
+              onChange={handleFileChange}
+            />
+          </Button>
         </Box>
       </CardContent>
     </Card>

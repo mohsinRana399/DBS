@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../App.css";
 import { uploadAndAnalyzePdf } from "../services/databricksService";
-import { Box, Stack } from "@mui/material";
+import { Alert, Box, Snackbar, Stack } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import FileUploadBox from "../components/FileUploadBox";
 import FileAnalysisTabs from "../components/fileAnalysis/FileAnalysisTabs";
@@ -13,11 +13,12 @@ import {
 } from "../redux/slices/fileSlice";
 import type { FileProcessStatus } from "../redux/slices/fileSlice";
 import type { AppDispatch, RootState } from "../redux/store";
+import { DEFAULT_PROMPTS } from "../utils/constants";
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
   const [processingFile, setProcessingFile] = useState<boolean>(false);
-
+  const [toastOpen, setToastOpen] = useState(false);
   const [currentFileIndex, setCurrentFileIndex] = useState<number | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -49,7 +50,14 @@ const Home: React.FC<HomeProps> = () => {
       // updateFileStatus(i, "processing");
       dispatch(updateFileStatus({ index: i, status: "processing" }));
       try {
-        const result = await uploadAndAnalyzePdf(queue[i].file, prompts);
+        let usedPrompts = prompts;
+
+        if (!prompts || prompts.length === 0) {
+          usedPrompts = DEFAULT_PROMPTS;
+          setToastOpen(true);
+        }
+
+        const result = await uploadAndAnalyzePdf(queue[i].file, usedPrompts);
         console.log({ result });
 
         if (result?.success) {
@@ -119,6 +127,22 @@ const Home: React.FC<HomeProps> = () => {
           <FileAnalysisTabs files={fileQueue} />
         </Grid>
       )}
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={4000}
+        onClose={() => setToastOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setToastOpen(false)}
+          severity="info"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Using default prompts since none were saved.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
